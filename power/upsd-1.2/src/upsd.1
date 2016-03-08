@@ -1,0 +1,106 @@
+.TH UPSD 1
+.SH NAME
+upsd \- uninterruptible power supply (UPS) daemon
+.SH SYNOPSIS
+.B upsd
+[\fB\-f\fR|\fB\-i\fR|\fB\-p\fR|\fB\-v\fR]
+[\fB\-l\fR \fIlevel\fR]
+.SH DESCRIPTION
+\fBupsd\fR is an uninterruptible power supply (UPS) daemon.
+It controls the system behavior in the event of a power outage.
+This program is intended to run on the Raspberry Pi.
+.PP
+There must be a properly installed hardware UPS available for the system.
+A wired network interface (usually eth0) is used to determine whether there currently is a power outage: if the wired LAN connection goes down, then \fBupsd\fR will assume that there is a loss of power.
+Please see <http://raspi-ups.appspot.com> for further details about the required hardware setup.
+.PP
+The configuration is done by editing the \fIupsd.conf\fR file.
+See \fBupsd.conf\fR(5) for details.
+.PP
+\fBupsd\fR will run in the background and execute custom predefined scripts on specific power supply events.
+See the \fBFILES\fR section below for details.
+.SH OPTIONS
+.TP
+.B \-f
+Run \fBupsd\fR as normal foreground program, and not as a daemon.
+All output will be written to the standard output instead of to the system log.
+Use this for testing only.
+.TP
+.B \-i
+If \fBupsd\fR is currently running, then print some power supply status information and exit.
+The output is both human and machine-readable.
+.TP
+.B \-p
+Print the paths of the files used by \fBupsd\fR and exit.
+You can use this option to find out where the configuration and script files are located on your system.
+.TP
+.B \-v
+Print version information and exit.
+.TP
+\fB\-l\fR \fIlevel\fR
+Set the initially assumed battery charge level to the given \fIlevel\fR, in percent (%).
+Use this for testing only.
+The default level is \fB100\fR %.
+.SH FILES
+The following files are used by \fBupsd\fR.
+Note that the paths might be different on your system.
+You can use the \fB-p\fR option to find out the exact paths of all files on your system.
+.TP
+.I /etc/upsd/upsd.conf
+This is the configuration file for \fBupsd\fR. See \fBupsd.conf\fR(5) for details.
+.TP
+.I /usr/lib/upsd/power_outage
+This script is executed by \fBupsd\fR if there is a power outage.
+Note that the system will automatically continue running by using the battery in this case.
+.TP
+.I /usr/lib/upsd/power_back
+This script is executed by \fBupsd\fR if the power comes back after a preceding power outage.
+.TP
+.I /usr/lib/upsd/low_battery
+This script is executed by \fBupsd\fR if there is a power outage \fBand\fR the battery charge level is considered to be low.
+Whenever this happens, you have to expect an abrupt loss of power very soon.
+It thus usually is the best idea to properly shut down the system at this point.
+Simply uncomment the \fBshutdown -h now\fR instruction within the script to do this.
+Note that \fBupsd\fR must be running as root, otherwise this will not work.
+.TP
+.I /var/lib/upsd/upsd.status
+If \fBupsd\fR is currently running, then this file contains some status information needed by the program.
+If you want to get information about the current power supply status, use the \fB-i\fR option instead of reading this file!
+.TP
+.I /var/run/upsd.pid
+If \fBupsd\fR is currently running, then this file contains the PID of the currently running program instance.
+.SH LOGGING
+\fBupsd\fR writes to the system log.
+To view all log entries written by \fBupsd\fR, use the following command:
+.PP
+.B cat /var/log/syslog | grep upsd
+.SH STARTING AND STOPPING
+It is usually not necessary to manually start or stop \fBupsd\fR, since this happens automatically when booting or shutting down the system.
+If you still want to do this (e.g. after changing the configuration), you can use the following commands:
+.PP
+.B sudo /etc/init.d/upsd start
+.br
+.B sudo /etc/init.d/upsd stop
+.br
+.B sudo /etc/init.d/upsd restart
+.SH SEE ALSO
+\fBupsd.conf\fR(5) - man page of the \fBupsd\fR configuration file
+.SH AUTHOR
+Written by Mathias Kunter.
+See <http://raspi-ups.appspot.com> for further details and FAQ.
+Feel free to contact me at <raspi.ups@gmail.com>.
+.SH COPYRIGHT
+Copyright (c) 2015 Mathias Kunter
+.PP
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.

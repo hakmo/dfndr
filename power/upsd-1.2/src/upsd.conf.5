@@ -1,0 +1,160 @@
+.TH UPSD.CONF 5
+.SH NAME
+upsd.conf \- configuration file for the \fBupsd\fR(1) daemon program
+.SH OVERVIEW
+This file is normally stored at \fI/etc/upsd/upsd.conf\fR, but note that this might also be different on your system.
+You can execute \fBupsd -p\fR to find out the exact path of this file on your system.
+.SH DESCRIPTION
+The \fIupsd.conf\fR file is used to configure the \fBupsd\fR(1) daemon program.
+It is both human and machine-readable and uses a simple \fIKEY\fB=\fIVALUE\fR syntax.
+Spaces before or after the \fB=\fR sign are ignored.
+Lines starting with a leading \fB#\fR character are comments and will be ignored.
+.PP
+You should at least supply appropriate values for the \fBBATTERY_RUN_TIME\fR and \fBBATTERY_CHARGE_TIME\fR options, so that \fBupsd\fR can correctly compute the current battery charge level.
+All other options can be left with their default values.
+.SH CONFIGURATION OPTIONS
+The available configuration options are as follows:
+.TP
+\fBENABLED\fR = { \fBYES\fR | \fBNO\fR }
+Defines whether the entire \fBupsd\fR program is enabled.
+The default setting for this option is \fBYES\fR.
+Set this option to \fBNO\fR if you want to temporarily disable \fBupsd\fR.
+This will prevent the program from starting.
+.TP
+\fBINTERFACE\fR = \fIiface\fR
+Sets \fIiface\fR as the network interface which will be used to determine whether there currently is a power outage.
+The default setting for this option is \fBeth0\fR, which denotes the primary LAN port.
+This only needs to be changed if \fBupsd\fR should use a different network interface to determine power outages (but note that using a WLAN interface will usually not work here).
+See <http://raspi-ups.appspot.com> for further details about the hardware setup.
+.TP
+\fBCHECK_INTERVAL\fR = \fIinterval\fR
+Sets \fIinterval\fR as the interval used by \fBupsd\fR to check for power outages, in milliseconds (ms).
+This must be a number between 100 and 10000.
+The default setting for this option is \fB1000\fR.
+.TP
+\fBUPDATE_INTERVAL\fR = \fIinterval\fR
+Sets \fIinterval\fR as the interval used by \fBupsd\fR to update the power supply status information, in seconds (s).
+This must be a number between 1 and 60.
+The default setting for this option is \fB10\fR.
+Note that the update interval can not be shorter than the check interval.
+.TP
+\fBBATTERY_RUN_TIME\fR = \fIruntime\fR
+Sets \fIruntime\fR as the amount of time the fully charged battery of the UPS can power the system, in seconds (s).
+To find out the correct value for \fIruntime\fR, you have the following options:
+.RS
+.TP
+.B By measurement (recommended).
+Make sure that the battery is fully charged, and disconnect the battery from the power supply.
+Then, connect the system to the battery, power it on and test for how long it can run by using the battery only.
+It is recommended to repeat the test a few times and to use the \fBlowest\fR of the obtained values as \fIruntime\fR.
+.TP
+.B By computation.
+You can also compute the \fIruntime\fR by using the following formula:
+.RS
+.PP
+.I runtime
+.B = 3600 * Wh / W
+.RS
+Wh = battery capacity in watt-hours (Wh)
+.br
+W = average system power consumption in watt (W)
+.RS
+Raspberry Pi Model A: \fB1.5 W\fR
+.br
+Raspberry Pi Model A+: \fB1 W\fR
+.br
+Raspberry Pi Model B: \fB2.5 W\fR
+.br
+Raspberry Pi Model B+: \fB1.75 W\fR
+.br
+Raspberry Pi Model 2 B: \fB2 W\fR
+.RE
+.RE
+.PP
+To use this formula, you need to know the \fBbattery capacity in watt-hours (Wh)\fR and the \fBaverage system power consumption in watt (W)\fR.
+To find out the \fBwatt-hours (Wh)\fR value, read the technical specification of your battery.
+If you can not find any \fBwatt-hours (Wh)\fR value there, then you can use the below formula to compute it.
+To find out the \fBwatt (W)\fR value, you can either measure the power consumption of your system yourself (recommended), or use the average Raspberry Pi power consumption values which are listed above (WITHOUT ANY WARRANTY!).
+.PP
+To compute the \fBwatt-hours (Wh)\fR value from the \fBmilliampere-hours (mAh)\fR value, use the following formula.
+\fBNOTE:\fR This formula is only correct for \fBLi-Ion\fR and \fBLi-Po\fR batteries!
+.PP
+.B Wh = mAh / 270
+.RS
+mAh = battery capacity in milliampere-hours (mAh)
+.br
+Wh = battery capacity in watt-hours (Wh)
+.RE
+.RE
+.RE
+.TP
+\fBBATTERY_CHARGE_TIME\fR = \fIchargetime\fR
+Sets \fIchargetime\fR as the amount of time the empty battery of the UPS needs to become fully charged, in seconds (s).
+To find out the correct value for \fIchargetime\fR, you have the following options:
+.RS
+.TP
+.B By measurement (recommended).
+Make sure that the battery is empty, disconnect the system from the battery, and connect the battery to the power supply.
+Test how long it takes until the battery is fully charged.
+It is recommended to repeat the test a few times and to use the \fBhighest\fR of the obtained values as \fIchargetime\fR.
+.TP
+.B By computation.
+You can also compute the \fIchargetime\fR by using the following formula:
+.RS
+.PP
+.I chargetime
+.B = 3600 * Wh / (min(As, Ai) * V)
+.RS
+Wh = battery capacity in watt-hours (Wh)
+.br
+As = the amperage of the power supply unit, in ampere (A)
+.br
+Ai = the amperage of the battery input connector, in ampere (A)
+.br
+V = the voltage of the power supply unit, in volt (V)
+.RE
+.PP
+To find out the required values, read the technical specifications of your battery and power supply unit.
+.PP
+If you can not find the \fBwatt-hours (Wh)\fR value there, then you can use the formula from the \fBBATTERY_RUN_TIME\fR option to compute it.
+.RE
+.RE
+.TP
+\fBBATTERY_LOW_LEVEL\fR = \fIlowlevel\fR
+Sets \fIlowlevel\fR as the charge level under which the battery will be considered empty, in percent (%).
+This value will determine when the \fIlow_battery\fR script is executed.
+It must be a number between 1 and 100, or 0 if this feature should be disabled.
+The default setting for this option is \fB30\fR %.
+Note that the current battery charge level can only be computed, but not actually measured.
+This means that the actual current battery charge level may be lower than assumed, especially if the battery is old and has already lost some of its capacity.
+Do not use too low values as \fIlowlevel\fR for this reason.
+Also see the \fBBATTERY_LOW_TIME\fR option, which works independent from this option.
+.TP
+\fBBATTERY_LOW_TIME\fR = \fIlowtime\fR
+Sets \fIlowtime\fR as the time limit after a loss of power at which the battery will be considered empty, in seconds (s).
+This value will determine when the \fIlow_battery\fR script is executed.
+It must be a number greater than or equal to 1, or 0 if this feature should be disabled.
+The default setting for this option is \fB0\fR (i.e., there is no time limit by default).
+Note that this option does not consider the current battery charge level at all, so you should always make sure that the battery is fully charged at the time of a potential power loss.
+Also see the \fBBATTERY_LOW_LEVEL\fR option, which works independent from this option.
+.SH SEE ALSO
+\fBupsd\fR(1) - man page of the upsd daemon program
+.SH AUTHOR
+Written by Mathias Kunter.
+See <http://raspi-ups.appspot.com> for further details and FAQ.
+Feel free to contact me at <raspi.ups@gmail.com>.
+.SH COPYRIGHT
+Copyright (c) 2015 Mathias Kunter
+.PP
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
